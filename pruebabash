@@ -1,0 +1,8 @@
+#!/bin/bash
+file="/etc/passwd"
+
+IFS=$':'
+
+for text in $(cat $file);do
+	a=${awk -F ':' $file}
+done

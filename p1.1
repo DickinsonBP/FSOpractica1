@@ -1,3 +1,21 @@
 #!/bin/bash
+#nombre demasiado corto
+cat $1 | cut -d':' -f1 >fileA
+cat $1 | cut -d':' -f 3 > fileB
+cat $1 | cut -d':' -f 4 > fileC
+echo 'Nombres' 
+while IFS= read -r line
+do
+	#echo "$line"
+	if((${#line} < 5));then
+		echo "$line --> corto"
+	else
+		echo "$line --> adecuado"
+	fi
+done < fileA
+#comprobar permisos de sudoers
+echo '--------------------------------'
+echo 'Permisos sudoers'
 
-echo "prueba"
+#a=$(cat fb | cut -d':' -f1)
+#b=$(cat fb | cut -d':' -f2)
