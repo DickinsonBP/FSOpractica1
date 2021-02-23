@@ -1,4 +1,5 @@
 #!/bin/bash
+#parametros 1--> debe ser /etc/passwd o /etc/shadow (con sudo)
 #nombre demasiado corto
 cat $1 | cut -d':' -f1 >fileA
 cat $1 | cut -d':' -f 3 > fileB
