@@ -1,14 +1,20 @@
 #!/bin/bash
 #parametros 1--> debe ser /etc/passwd o /etc/shadow (con sudo)
 #nombre demasiado corto
+if(($# == 2));then
+	let largo=$2
+else
+	let largo=5
+fi
+
 cat $1 | cut -d':' -f1 >fileA
-cat $1 | cut -d':' -f 3 > fileB
-cat $1 | cut -d':' -f 4 > fileC
-echo 'Nombres' 
+cat $1 | cut -d':' -f 3,4 > fb
+#cat $1 | cut -d':' -f 4 > fileC
+echo "Nombres, Adecuado >= $largo"  
 while IFS= read -r line
 do
 	#echo "$line"
-	if((${#line} < 5));then
+	if((${#line} < largo));then
 		echo "$line --> corto"
 	else
 		echo "$line --> adecuado"
@@ -18,7 +24,8 @@ done < fileA
 echo '--------------------------------'
 echo 'Permisos sudoers'
 
-#a=$(cat fb | cut -d':' -f1)
-#b=$(cat fb | cut -d':' -f2)
+a=$(cat fb | cut -d':' -f1)
+b=$(cat fb | cut -d':' -f2)
 
-echo 'hola'
+echo "A:"$a
+echo "B:"$b
