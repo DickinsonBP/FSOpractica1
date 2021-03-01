@@ -1,14 +1,20 @@
 #!/bin/bash
 #parametros 1--> debe ser /etc/passwd o /etc/shadow (con sudo)
 #nombre demasiado corto
-if(($# == 2));then
-	let largo=$2
-else
-	let largo=5
+#echo "parametros 0:$0 1:$1 2:$2"
+if(($# == 0));then
+	largo=5
+	dias=500
+elif(($# == 1));then
+	largo=$1
+	dias=500
+elif(($# == 2));then
+	largo=$1
+	dias=$2
 fi
 
-cat $1 | cut -d':' -f1 >fileA
-cat $1 | cut -d':' -f 3,4 > fb
+cat /etc/passwd | cut -d':' -f1 >fileA
+cat /etc/passwd | cut -d':' -f 1,3,4 | tr ':' ' ' > fileB
 #cat $1 | cut -d':' -f 4 > fileC
 echo "Nombres, Adecuado >= $largo"  
 while IFS= read -r line
@@ -23,9 +29,50 @@ done < fileA
 #comprobar permisos de sudoers
 echo '--------------------------------'
 echo 'Permisos sudoers'
+cont=0
+while IFS= read -r line
+do
+	string=($line)
+	if [ ${string[1]} -eq 0 ] && [ ${string[2]} -eq 0 ];then
+		echo "El usuario (${string[0]})tiene permisos de administrador"
+		let cont=cont+1
+	else
+		echo "El usuario (${string[0]}) no tiene permisos"
+	fi
 
-a=$(cat fb | cut -d':' -f1)
-b=$(cat fb | cut -d':' -f2)
+done < fileB
+echo "Hay $cont usuarios con permisos elevados"
 
-echo "A:"$a
-echo "B:"$b
+echo '--------------------------------'
+echo 'Fechas'
+
+sudo cat /etc/shadow | cut -d':' -f1,3 | tr ':' ' ' > fileC
+
+#cat fileC
+echo "Dias, Adecuado <= $dias"
+while IFS= read -r line
+do
+	string=($line)
+	if [ ${string[1]} -gt $dias ];then
+		echo "El usuario (${string[0]}) hace mucho que no cambia la password"
+	else 
+		echo "El usuario (${string[0]}) hace poco que ha cambiado la password"
+	fi
+done < fileC
+
+#-------------------
+#obtener todos los ficheros
+sudo find / -type f -perm 755 > archivosEjecucionOthers
+echo "
+
+Para ver archivos donde el usuario Other tiene permisos de ejecucion ejecute el comando cat archivosEjecucionOthers"
+
+sudo find / -type f -perm /4000 > archivosSUID
+echo "
+
+Para ver archivos donde el usuario Other tiene permisos SUID ejecute el comando cat archivosSUID"
+
+
+
+#borrado de ficheros
+rm fileA fileB fileC
