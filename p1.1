@@ -62,7 +62,7 @@ done < fileC
 
 #-------------------
 #obtener todos los ficheros
-sudo find / -type f -perm 755 > archivosEjecucionOthers
+sudo find / -type f -perm /o=x > archivosEjecucionOthers
 echo "
 
 Para ver archivos donde el usuario Other tiene permisos de ejecucion ejecute el comando cat archivosEjecucionOthers"
@@ -72,7 +72,17 @@ echo "
 
 Para ver archivos donde el usuario Other tiene permisos SUID ejecute el comando cat archivosSUID"
 
+sudo find / -name "*.tgz" > archivosTgz
+while IFS= read -r line
+do
+	tar -xvzf $line > comprimidos
+	
+	while IFS= read -r linea
+	do
+		find $linea -perm /o=x >> permisosComprimidos
+	done < comprimidos
 
+done < archivosTgz
 
 #borrado de ficheros
-rm fileA fileB fileC
+rm fileA fileB fileC archivosTgz comprimidos
