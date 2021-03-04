@@ -12,20 +12,21 @@ elif(($# == 2));then
 	largo=$1
 	dias=$2
 fi
-
-cat /etc/passwd | cut -d':' -f1 >fileA
-cat /etc/passwd | cut -d':' -f 1,3,4 | tr ':' ' ' > fileB
+mkdir archivosp1.1
+cat /etc/passwd | cut -d':' -f1 >archivosp1.1/fileA
+cat /etc/passwd | cut -d':' -f 1,3,4 | tr ':' ' ' > archivosp1.1/fileB
 #cat $1 | cut -d':' -f 4 > fileC
-echo "Nombres, Adecuado >= $largo"  
+echo "Nombres, Adecuado >= $largo" > archivosp1.1/nombresCortos
+echo "Nombres, Adecuado >= $largo" > archivosp1.1/nombresAdecuados
 while IFS= read -r line
 do
 	#echo "$line"
 	if((${#line} < largo));then
-		echo "$line --> corto"
+		echo "$line" >> archivosp1.1/nombresCortos
 	else
-		echo "$line --> adecuado"
+		echo "$line" >> archivosp1.1/nombresAdecuados
 	fi
-done < fileA
+done < archivosp1.1/fileA
 #comprobar permisos de sudoers
 echo '--------------------------------'
 echo 'Permisos sudoers'
@@ -34,19 +35,19 @@ while IFS= read -r line
 do
 	string=($line)
 	if [ ${string[1]} -eq 0 ] && [ ${string[2]} -eq 0 ];then
-		echo "El usuario (${string[0]})tiene permisos de administrador"
+		echo "${string[0]}" >> archivosp1.1/usuariosconPermisos
 		let cont=cont+1
 	else
-		echo "El usuario (${string[0]}) no tiene permisos"
+		echo "${string[0]}" >> archivosp1.1/usuariossinPermisos
 	fi
 
-done < fileB
+done < archivosp1.1/fileB
 echo "Hay $cont usuarios con permisos elevados"
 
 echo '--------------------------------'
 echo 'Fechas'
 
-sudo cat /etc/shadow | cut -d':' -f1,3 | tr ':' ' ' > fileC
+sudo cat /etc/shadow | cut -d':' -f1,3 | tr ':' ' ' > archivosp1.1/fileC
 
 #cat fileC
 echo "Dias, Adecuado <= $dias"
@@ -54,24 +55,20 @@ while IFS= read -r line
 do
 	string=($line)
 	if [ ${string[1]} -gt $dias ];then
-		echo "El usuario (${string[0]}) hace mucho que no cambia la password"
+		echo "${string[0]}" >> archivosp1.1/muchotiempoPasswd
 	else 
-		echo "El usuario (${string[0]}) hace poco que ha cambiado la password"
+		echo "${string[0]}" >> archivosp1.1/pocotiempoPasswd
 	fi
-done < fileC
+done < archivosp1.1/fileC
 
 #-------------------
 #obtener todos los ficheros
-sudo find / -type f -perm /o=x > archivosEjecucionOthers
-echo "
+sudo find / -type f -perm /o=x > archivosp1.1/archivosEjecucionOthers
 
-Para ver archivos donde el usuario Other tiene permisos de ejecucion ejecute el comando cat archivosEjecucionOthers"
 
-sudo find / -type f -perm /4000 > archivosSUID
-echo "
+sudo find / -type f -perm /4000 > archivosp1.1/archivosSUID
 
-Para ver archivos donde el usuario Other tiene permisos SUID ejecute el comando cat archivosSUID"
-
+cd archivosp1.1
 sudo find / -name "*.tgz" > archivosTgz
 while IFS= read -r line
 do
@@ -83,6 +80,10 @@ do
 	done < comprimidos
 
 done < archivosTgz
-
+cd ..
 #borrado de ficheros
-rm fileA fileB fileC archivosTgz comprimidos
+rm archivosp1.1/fileA archivosp1.1/fileB archivosp1.1/fileC archivosp1.1/archivosTgz archivosp1.1/comprimidos
+
+echo "
+
+Para ver los archivos ejecute el comando ls para ver el archivo y luego cat archivo"
