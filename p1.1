@@ -1,13 +1,13 @@
 #!/bin/bash
 #parametros 1--> debe ser /etc/passwd o /etc/shadow (con sudo)
 #nombre demasiado corto
-#echo "parametros 0:$0 1:$1 2:$2"
+#comprobacion de parametros
 if(($# == 0));then
 	largo=5
-	dias=500
+	dias=300
 elif(($# == 1));then
 	largo=$1
-	dias=500
+	dias=300
 elif(($# == 2));then
 	largo=$1
 	dias=$2
@@ -87,7 +87,7 @@ echo "Archivos .tar" >> permisosComprimidos
 sudo find / -name "*.tar" > archivosTgz
 while IFS= read -r line
 do
-	tar -xvzf $line > comprimidos
+	tar xvf $line > comprimidos
 	
 	while IFS= read -r linea
 	do
