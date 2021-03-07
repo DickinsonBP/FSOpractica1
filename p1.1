@@ -2,13 +2,9 @@
 #parametros 1--> debe ser /etc/passwd o /etc/shadow (con sudo)
 #nombre demasiado corto
 #comprobacion de parametros
-if(($# == 0));then
-	largo=5
-	dias=300
-elif(($# == 1));then
-	largo=$1
-	dias=300
-elif(($# == 2));then
+largo=5
+dias=300
+if(($# == 2));then
 	largo=$1
 	dias=$2
 fi
@@ -52,46 +48,48 @@ sudo cat /etc/shadow | cut -d':' -f1,3 | tr ':' ' ' > archivosp1.1/fileC
 
 #cat fileC
 echo "Dias, Adecuado <= $dias"
+numDiasHastaHoy=$(($(date --utc --date "$1" +%s)/86400))
+echo "dias hasta hoy: $numDiasHastaHoy"
+echo "parametro dias: $dias"
 while IFS= read -r line
 do
 	string=($line)
-	if [ ${string[1]} -gt $dias ];then
+	let restaDias=$numDiasHastaHoy-${string[1]} 
+	if [ $restaDias -gt $dias ];then
 		echo "${string[0]}" >> archivosp1.1/muchotiempoPasswd
-	else 
-		echo "${string[0]}" >> archivosp1.1/pocotiempoPasswd
 	fi
 done < archivosp1.1/fileC
 
 echo '--------------------------------'
 echo 'Permisos others y SETUID activo(ver carpeta archivosp1.1)'
-sudo find / -type f -perm /o=x > archivosp1.1/archivosEjecucionOthers
+sudo find / -type f -perm /o=x > archivosp1.1/archivosEjecucionOthers 2> error
 
 
-sudo find / -type f -perm /4000 > archivosp1.1/archivosSUID
+sudo find / -type f -perm /4000 > archivosp1.1/archivosSUID 2>> error
 echo '--------------------------------'
 echo 'Bit X activado comprimidos (ver carpeta archivosp1.1)'
 cd archivosp1.1
 echo "Archivos .tgz" > permisosComprimidos
-sudo find / -name "*.tgz" > archivosTgz
+sudo find / -name "*.tgz" > archivosTgz 2>> error
 while IFS= read -r line
 do
 	tar -xvzf $line > comprimidos
 	
 	while IFS= read -r linea
 	do
-		find $linea -perm /o=x >> permisosComprimidos
+		find $linea -perm /o=x >> permisosComprimidos 2>> error
 	done < comprimidos
 
 done < archivosTgz
 echo "Archivos .tar" >> permisosComprimidos
-sudo find / -name "*.tar" > archivosTgz
+sudo find / -name "*.tar" > archivosTgz 2>> error
 while IFS= read -r line
 do
 	tar xvf $line > comprimidos
 	
 	while IFS= read -r linea
 	do
-		find $linea -perm /o=x >> permisosComprimidos
+		find $linea -perm /o=x >> permisosComprimidos 2>> error
 	done < comprimidos
 
 done < archivosTgz
