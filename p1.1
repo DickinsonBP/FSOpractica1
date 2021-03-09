@@ -68,11 +68,11 @@ done < archivosp1.1/fileC
 
 echo '--------------------------------'
 echo '4. Permisos others en archivosp1.1/archivosEjecucionOthers'
-sudo find / -type f -perm /o=x > archivosp1.1/archivosEjecucionOthers 2> error
+sudo find ./test -type f -perm /o=x > archivosp1.1/archivosEjecucionOthers 2> error
 
 echo '--------------------------------'
 echo '5. Permisos others en archivosp1.1/archivosEjecucionOthers'
-sudo find / -type f -perm /4000 > archivosp1.1/archivosSUID 2>> error
+sudo find ./test -type f -perm /4000 > archivosp1.1/archivosSUID 2>> error
 
 
 echo '--------------------------------'
