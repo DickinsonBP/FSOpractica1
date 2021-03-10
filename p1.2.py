@@ -26,6 +26,8 @@ import spwd                 # para /etc/shadow
 from datetime import datetime # para las fechas
 from datetime import date
 from datetime import timedelta
+import stat                 # para permisos
+import tarfile              # para archivos .tar
 
 def tracta_exepcio(error):
     exception_type = type(error).__name__
@@ -104,8 +106,69 @@ def massa_tempssh():
     b = date(1970,1,1)
     numDias = (a-b).days
 
-    
+def setuid_actiu():
+    global lboxP, lboxS
+    global quefaig
+    quefaig.set("llistant els usuaris que tenen el SETUID actiu                   ")
+    setuid_actiupy()
+    setuid_actiush()
+    quefaig.set("llistant els usuaris que tenen el SETUID actiu                   ")
 
+
+def setuid_actiupy():
+    global lboxP
+    global quefaig
+    quefaig.set("llistant els usuaris que tenen el SETUID actiu amb python")
+    lboxP.delete(0,END)
+    directorio = os.listdir('./test')
+    for line in directorio:
+        archivo, extension = os.path.splitext(line)
+        #print("El archivo {} tiene extension {}".format(archivo,extension))
+        if(extension != ".tar") and (extension != ".tgz"):
+            myFile = os.path.join('./test',line)
+            test = os.stat(myFile)
+            result = test.st_mode & stat.S_ISUID
+            if(result != 0):
+                lboxP.insert(END,line)
+
+
+def setuid_actiush():
+    global lboxS
+    global quefaig
+    quefaig.set("llistant els usuaris que tenen el SETUID actiu amb shell")
+
+def permis_exec_tar():
+    global lboxP, lboxS
+    global quefaig
+    quefaig.set("llistant els fitxers tar que tenen permisos d'execucio                   ")
+    permis_exec_tarpy()
+    permis_exec_tarsh()
+    quefaig.set("llistant els fitxers tar que tenen permisos d'execucio                   ")
+
+
+def permis_exec_tarpy():
+    global lboxP
+    global quefaig
+    quefaig.set("llistant els fitxers tar que tenen permisos d'execucio amb python")
+    #crear directorio para descomprimir
+    os.mkdir('./descomprimir')
+    directorio = os.listdir('./test')
+    for line in directorio:
+        archivo, extension = os.path.splitext(line)
+        #print("El archivo {} tiene extension {}".format(archivo,extension))
+        if(extension == ".tar") or (extension == ".tgz"):
+            with tarfile.open(line) as t:
+                myFile = os.path.join('./test',line)
+                t.extract(myFile,'./descomprimir')
+    print(os.listdir('./descomprimir'))
+
+
+
+
+def permis_exec_tarsh():
+    global lboxs
+    global quefaig
+    quefaig.set("llistant els fitxers tar que tenen permisos d'execucio amb shell")
 
 def netejar():
     global lboxP, lboxS
@@ -142,8 +205,8 @@ Button (frameBotons, text='noms curts', command=noms_curts).pack(anchor=W,side=L
 Button (frameBotons, text='sudoers', command=llista_dir).pack(side=LEFT)
 Button (frameBotons, text='massa temps', command=massa_temps).pack(side=LEFT)
 Button (frameBotons, text='exec others', command=llista_dir).pack(side=LEFT)
-Button (frameBotons, text='setuid actiu', command=llista_dir).pack(side=LEFT)
-Button (frameBotons, text='permis exec a tar', command=llista_dir).pack(anchor=E,side=LEFT)
+Button (frameBotons, text='setuid actiu', command=setuid_actiu).pack(side=LEFT)
+Button (frameBotons, text='permis exec a tar', command=permis_exec_tar).pack(anchor=E,side=LEFT)
 Button (frameBotons, text='netejar', command=netejar).pack(anchor=W,side=LEFT)
 frameBotons.pack(expand=True,fill=BOTH,padx=10,pady=5)
 
@@ -173,8 +236,8 @@ Button (frameBotonsPy, text='noms curts', command=llista_dirPy).pack(anchor=W,si
 Button (frameBotonsPy, text='sudoers', command=llista_dirPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='massa temps', command=massa_tempspy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='exec others', command=llista_dirPy).pack(anchor=W,side=TOP)
-Button (frameBotonsPy, text='setuid actiu', command=llista_dirPy).pack(anchor=W,side=TOP)
-Button (frameBotonsPy, text='exec a tar', command=llista_dirPy).pack(anchor=W,side=TOP)
+Button (frameBotonsPy, text='setuid actiu', command=setuid_actiupy).pack(anchor=W,side=TOP)
+Button (frameBotonsPy, text='exec a tar', command=permis_exec_tarpy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='netejar', command=netejar).pack(anchor=W,side=TOP)
 
 frameEventsSh= Frame(frameEvents)
@@ -196,8 +259,8 @@ Button (frameBotonsSh, text='noms curts', command=llista_dirSh).pack(anchor=W,si
 Button (frameBotonsSh, text='sudoers', command=llista_dirSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='massa temps', command=massa_tempssh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='exec others', command=llista_dirSh).pack(anchor=W,side=TOP)
-Button (frameBotonsSh, text='setuid actiu', command=llista_dirSh).pack(anchor=W,side=TOP)
-Button (frameBotonsSh, text='exec a tar', command=llista_dirSh).pack(anchor=W,side=TOP)
+Button (frameBotonsSh, text='setuid actiu', command=setuid_actiush).pack(anchor=W,side=TOP)
+Button (frameBotonsSh, text='exec a tar', command=permis_exec_tarsh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='netejar', command=netejar).pack(anchor=W,side=TOP)
 
 frameSortir= Frame(guiroot)
