@@ -77,32 +77,25 @@ sudo find ./test -type f -perm /4000 > archivosp1.1/archivosSUID 2>> error
 
 echo '--------------------------------'
 echo '6. Bit X activado comprimidos en archivosp1.1/permisosComprimidos'
-mkdir archivosp1.1/descomprimir
+
+mkdir descomprimir
 echo "Archivos .tgz" > archivosp1.1/permisosComprimidos
-sudo find . -name "*.tgz" > archivosp1.1/archivosTgz 2>> error
+sudo find ./test -name "*.tgz" > archivosp1.1/archivosTgz 2>> error
 while IFS= read -r line
 do
-	tar -xvzf $line  > archivosp1.1/comprimidos
-	
-	while IFS= read -r linea
-	do
-		sudo find $linea -perm /o=x >> archivosp1.1/permisosComprimidos 2>> error
-	done < archivosp1.1/comprimidos
+	tar -xvzf $line -C ./descomprimir > descomprimir/comprimidos
+	sudo find ./descomprimir -type f -perm /o=x >> archivosp1.1/permisosComprimidos 2>> error
 
 done < archivosp1.1/archivosTgz
 echo "Archivos .tar" >> archivosp1.1/permisosComprimidos
-sudo find . -name "*.tar" > archivosp1.1/archivosTgz 2>> error
+sudo find ./test -name "*.tar" > archivosp1.1/archivosTgz 2>> error
 while IFS= read -r line
 do
-	tar xvf $line  > archivosp1.1/comprimidos
-	
-	while IFS= read -r linea
-	do
-		sudo find $linea -perm /o=x >> archivosp1.1/permisosComprimidos 2>> error
-	done < archivosp1.1/comprimidos
+	tar xvf $line -C ./descomprimir > descomprimir/comprimidos
+	sudo find ./descomprimir -type f -perm /o=x >> archivosp1.1/permisosComprimidos 2>> error
 
 done < archivosp1.1/archivosTgz
 
 #borrado de ficheros
-rm archivosp1.1/fileA archivosp1.1/fileB archivosp1.1/fileC archivosp1.1/archivosTgz archivosp1.1/comprimidos grupos
+rm archivosp1.1/fileA archivosp1.1/fileB archivosp1.1/fileC archivosp1.1/archivosTgz descomprimir/comprimidos grupos
 
