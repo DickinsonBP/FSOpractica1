@@ -22,6 +22,10 @@ from tkinter import messagebox	# per a mostrar missatges a l’usuari
 
 # imports auxilliars/secundaris
 import gzip                 # per si el tar esta comprimit 
+import spwd                 # para /etc/shadow
+from datetime import datetime # para las fechas
+from datetime import date
+from datetime import timedelta
 
 def tracta_exepcio(error):
     exception_type = type(error).__name__
@@ -62,6 +66,47 @@ def noms_curts():
     quefaig.set("Buscant els noms d'usuaris amb menys de "+str(mida)+" caràcters   ")
 
 
+def massa_temps():
+    global lboxP, lboxS
+    global quefaig
+    quefaig.set("llistant els usuaris que fan massa temps no canvien la contrasenya                   ")
+    massa_tempspy()
+    massa_tempssh()
+    quefaig.set("llistant els usuaris que fan massa temps no canvien la contrasenya                   ")
+
+def massa_tempspy():
+    global lboxP
+    global quefaig
+    quefaig.set("llistant els usuaris que fan massa temps no canvien la contrasenya en python")
+    mida=simpledialog.askinteger('Num dies','Quants dies vols?')
+    entry = spwd.getspall()
+    #calculo de fechas
+    a = date.today() - timedelta(days=mida)
+    b = date(1970,1,1)
+    numDias = (a-b).days
+
+    lboxP.delete(0,END)
+    for element in entry:
+        ultimoCambio = element.sp_lstchg
+        if(ultimoCambio < numDias):
+            lboxP.insert(END,element.sp_nam)
+
+
+
+def massa_tempssh():
+    global lboxS
+    global quefaig
+    quefaig.set("llistant els usuaris que fan massa temps no canvien la contrasenya en shell")
+    mida=simpledialog.askinteger('Num dies','Quants dies vols?')
+    entry = spwd.getspall()
+    #calculo de fechas
+    a = date.today() - timedelta(days=mida)
+    b = date(1970,1,1)
+    numDias = (a-b).days
+
+    
+
+
 def netejar():
     global lboxP, lboxS
     global quefaig
@@ -95,7 +140,7 @@ frameBotons= Frame(guiroot)
 Button (frameBotons, text='llista_dir', command=llista_dir).pack(anchor=W,side=LEFT)
 Button (frameBotons, text='noms curts', command=noms_curts).pack(anchor=W,side=LEFT)
 Button (frameBotons, text='sudoers', command=llista_dir).pack(side=LEFT)
-Button (frameBotons, text='massa temps', command=llista_dir).pack(side=LEFT)
+Button (frameBotons, text='massa temps', command=massa_temps).pack(side=LEFT)
 Button (frameBotons, text='exec others', command=llista_dir).pack(side=LEFT)
 Button (frameBotons, text='setuid actiu', command=llista_dir).pack(side=LEFT)
 Button (frameBotons, text='permis exec a tar', command=llista_dir).pack(anchor=E,side=LEFT)
@@ -126,7 +171,7 @@ Label  (frameBotonsPy, text='Només Python:',font=("Arial Bold",14)).pack(anchor
 Button (frameBotonsPy, text='llista dir', command=llista_dirPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='noms curts', command=llista_dirPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='sudoers', command=llista_dirPy).pack(anchor=W,side=TOP)
-Button (frameBotonsPy, text='massa temps', command=llista_dirPy).pack(anchor=W,side=TOP)
+Button (frameBotonsPy, text='massa temps', command=massa_tempspy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='exec others', command=llista_dirPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='setuid actiu', command=llista_dirPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='exec a tar', command=llista_dirPy).pack(anchor=W,side=TOP)
@@ -149,7 +194,7 @@ Label  (frameBotonsSh, text='Només Shell :',font=("Arial Bold",14)).pack(anchor
 Button (frameBotonsSh, text='llista dir', command=llista_dirSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='noms curts', command=llista_dirSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='sudoers', command=llista_dirSh).pack(anchor=W,side=TOP)
-Button (frameBotonsSh, text='massa temps', command=llista_dirSh).pack(anchor=W,side=TOP)
+Button (frameBotonsSh, text='massa temps', command=massa_tempssh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='exec others', command=llista_dirSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='setuid actiu', command=llista_dirSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='exec a tar', command=llista_dirSh).pack(anchor=W,side=TOP)
