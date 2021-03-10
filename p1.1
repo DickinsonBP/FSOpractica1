@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#crear archivos para test
+echo "Generando carpeta test"
+./test.sh > salidas
 #parametros 1--> debe ser /etc/passwd o /etc/shadow (con sudo)
 
 #comprobacion de parametros
@@ -7,14 +10,13 @@ if(($# == 2));then
 	largo=$1
 	dias=$2
 
-elif
+else
 	largo=5
 	dias=300
 fi
 
 mkdir archivosp1.1
 cat /etc/passwd | cut -d':' -f1 >archivosp1.1/fileA
-cat /etc/passwd | cut -d':' -f 1,3,4 | tr ':' ' ' > archivosp1.1/fileB
 echo "Mirar carpeta archivosp1.1 para los resultados de cada tarea."
 
 #nombre demasiado corto
@@ -32,11 +34,21 @@ done < archivosp1.1/fileA
 echo '--------------------------------'
 echo '2. Permisos sudoers en archivosp1.1/usuariosconPermisos'
 echo "Ususarios sudoers" > archivosp1.1/usuariosconPermisos
+
+while IFS= read -r line
+do
+
+	groups $line >> grupos
+
+done < archivosp1.1/fileA
+
+cat grupos | cut -d':' -f1,2 | tr ':' ' '> archivosp1.1/fileB
+
 cont=0
 while IFS= read -r line
 do
 	string=($line)
-	if [ ${string[1]} -eq 0 ] && [ ${string[2]} -eq 0 ];then
+	if [[ "${string[*]}" == *"root"* ]] || [[ "${string[*]}" == *"sudo"* ]];then
 		echo "${string[0]}" >> archivosp1.1/usuariosconPermisos
 		let cont=cont+1
 	fi
@@ -46,7 +58,7 @@ echo "Hay $cont usuarios con permisos elevados"
 echo '--------------------------------'
 echo '3. Usuarios que hace demasiados que no cambian la contraseña en archivosp1.1/muchotiempoPasswd'
 sudo cat /etc/shadow | cut -d':' -f1,3 | tr ':' ' ' > archivosp1.1/fileC
-echo "Dias, Adecuado <= $dias"
+echo "$dias dias"
 numDiasHastaHoy=$(($(date --utc --date "$1" +%s)/86400))
 while IFS= read -r line
 do
@@ -59,42 +71,35 @@ done < archivosp1.1/fileC
 
 echo '--------------------------------'
 echo '4. Permisos others en archivosp1.1/archivosEjecucionOthers'
-sudo find / -type f -perm /o=x > archivosp1.1/archivosEjecucionOthers 2> error
+sudo find ./test -type f -perm /o=x > archivosp1.1/archivosEjecucionOthers 2> error
 
 echo '--------------------------------'
 echo '5. Permisos others en archivosp1.1/archivosEjecucionOthers'
-sudo find / -type f -perm /4000 > archivosp1.1/archivosSUID 2>> error
+sudo find ./test -type f -perm /4000 > archivosp1.1/archivosSUID 2>> error
 
 
 echo '--------------------------------'
-echo '6. Bit X activado comprimidos en archivosp1.1/permisosComprimidos'
-cd archivosp1.1
-echo "Archivos .tgz" > permisosComprimidos
-sudo find / -name "*.tgz" > archivosTgz 2>> error
+echo '6. Bit X activado de archivos comprimidos en archivosp1.1/permisosComprimidos'
+
+mkdir descomprimir
+echo "Archivos .tgz" > archivosp1.1/permisosComprimidos
+sudo find ./test -name "*.tgz" > archivosp1.1/archivosTgz 2>> error
 while IFS= read -r line
 do
-	tar -xvzf $line > comprimidos
-	
-	while IFS= read -r linea
-	do
-		find $linea -perm /o=x >> permisosComprimidos 2>> error
-	done < comprimidos
+	tar -xvzf $line -C ./descomprimir > salidas
+	sudo find ./descomprimir -type f -perm /o=x >> archivosp1.1/permisosComprimidos 2>> error
 
-done < archivosTgz
-echo "Archivos .tar" >> permisosComprimidos
-sudo find / -name "*.tar" > archivosTgz 2>> error
+done < archivosp1.1/archivosTgz
+echo "Archivos .tar" >> archivosp1.1/permisosComprimidos
+sudo find ./test -name "*.tar" > archivosp1.1/archivosTgz 2>> error
 while IFS= read -r line
 do
-	tar xvf $line > comprimidos
-	
-	while IFS= read -r linea
-	do
-		find $linea -perm /o=x >> permisosComprimidos 2>> error
-	done < comprimidos
+	tar xvf $line -C ./descomprimir > salidas
+	sudo find ./descomprimir -type f -perm /o=x >> archivosp1.1/permisosComprimidos 2>> error
 
-done < archivosTgz
-cd ..
+done < archivosp1.1/archivosTgz
 
 #borrado de ficheros
-rm archivosp1.1/fileA archivosp1.1/fileB archivosp1.1/fileC archivosp1.1/archivosTgz archivosp1.1/comprimidos
+rm archivosp1.1/fileA archivosp1.1/fileB archivosp1.1/fileC archivosp1.1/archivosTgz salidas grupos
+rm -rf descomprimir
 
