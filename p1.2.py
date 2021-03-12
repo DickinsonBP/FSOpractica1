@@ -28,6 +28,7 @@ from datetime import date
 from datetime import timedelta
 import stat                 # para permisos
 import tarfile              # para archivos .tar
+from shutil import rmtree   # para borrar carpeta
 
 def tracta_exepcio(error):
     exception_type = type(error).__name__
@@ -150,17 +151,27 @@ def permis_exec_tarpy():
     global lboxP
     global quefaig
     quefaig.set("llistant els fitxers tar que tenen permisos d'execucio amb python")
+    lboxP.delete(0,END)
     #crear directorio para descomprimir
     os.mkdir('./descomprimir')
     directorio = os.listdir('./test')
+    #print(directorio)
     for line in directorio:
         archivo, extension = os.path.splitext(line)
         #print("El archivo {} tiene extension {}".format(archivo,extension))
-        if(extension == ".tar") or (extension == ".tgz"):
-            with tarfile.open(line) as t:
-                myFile = os.path.join('./test',line)
-                t.extract(myFile,'./descomprimir')
-    print(os.listdir('./descomprimir'))
+        if(extension == ".tar"):
+            myFile = os.path.join('./test',line)
+            tar = tarfile.open(myFile, mode='r')
+            tar.extractall('./descomprimir')
+        
+    descomprimidos = os.listdir('./descomprimir')
+    for archivo in descomprimidos:
+        myFile = os.path.join('./descomprimir',archivo)
+        test = os.stat(myFile)
+        result = test.st_mode & stat.S_IXOTH
+        if(result != 0):
+            lboxP.insert(END,archivo)
+    rmtree("./descomprimir")
 
 
 
