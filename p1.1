@@ -16,7 +16,7 @@ else
 fi
 
 mkdir archivosp1.1
-cat /etc/passwd | cut -d':' -f1 >archivosp1.1/fileA
+cat /etc/passwd | cut -d':' -f1,2 | tr ':' ' ' >archivosp1.1/fileA
 echo "Mirar carpeta archivosp1.1 para los resultados de cada tarea."
 
 #nombre demasiado corto
@@ -25,8 +25,11 @@ echo '1. Nombres cortos en archivosp1.1/nombresCortos'
 echo "Nombres cortos < $largo letras" > archivosp1.1/nombresCortos
 while IFS= read -r line
 do
-	if((${#line} < largo));then
-		echo "$line" >> archivosp1.1/nombresCortos
+	string=($line)
+	if [ "${string[1]}" != *"*"* ];then
+		if((${#string[0]} < largo));then
+			echo "${string[0]}" >> archivosp1.1/nombresCortos
+		fi
 	fi
 done < archivosp1.1/fileA
 
@@ -34,7 +37,7 @@ done < archivosp1.1/fileA
 echo '--------------------------------'
 echo '2. Permisos sudoers en archivosp1.1/usuariosconPermisos'
 echo "Ususarios sudoers" > archivosp1.1/usuariosconPermisos
-
+cat /etc/passwd | cut -d':' -f1 >archivosp1.1/fileA
 while IFS= read -r line
 do
 
