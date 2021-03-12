@@ -90,9 +90,10 @@ def massa_tempspy():
 
     lboxP.delete(0,END)
     for element in entry:
-        ultimoCambio = element.sp_lstchg
-        if(ultimoCambio < numDias):
-            lboxP.insert(END,element.sp_nam)
+        if(element.sp_pwdp != "*") and (element.sp_pwdp != "!"):
+            ultimoCambio = element.sp_lstchg
+            if(ultimoCambio < numDias):
+                lboxP.insert(END,element.sp_nam)
 
 
 
