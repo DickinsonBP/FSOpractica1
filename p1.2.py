@@ -9,7 +9,6 @@
 # imports tipics/generics
 import os   # os.path, os.stat, os.remove ...
 import subprocess
-import pwd
 from sys import stderr
 from stat import filemode
 
@@ -23,6 +22,7 @@ from tkinter import messagebox	# per a mostrar missatges a l’usuari
 
 # imports auxilliars/secundaris
 import gzip                 # per si el tar esta comprimit 
+import pwd
 
 def tracta_exepcio(error):
     exception_type = type(error).__name__
