@@ -28,3 +28,5 @@ chmod u+s permisoSetuid
 echo "tengo permiso de others" > permisoOthers
 chmod o+x permisoOthers
 cd ..
+
+chmod 777 test
