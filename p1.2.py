@@ -24,7 +24,7 @@ from tkinter import messagebox	# per a mostrar missatges a l’usuari
 import gzip                 # per si el tar esta comprimit 
 import spwd                 # para /etc/shadow
 from datetime import datetime # para las fechas
-from datetime import date
+import datetime 
 from datetime import timedelta
 import stat                 # para permisos
 import tarfile              # para archivos .tar
@@ -84,13 +84,14 @@ def massa_tempspy():
     mida=simpledialog.askinteger('Num dies','Quants dies vols?')
     entry = spwd.getspall()
     #calculo de fechas
-    a = date.today() - timedelta(days=mida)
-    b = date(1970,1,1)
+    a = datetime.date.today() - timedelta(days=mida)
+    b = datetime.date(1970,1,1)
     numDias = (a-b).days
 
     lboxP.delete(0,END)
     for element in entry:
-        if(element.sp_pwdp != "*"):
+        #if(element.sp_pwdp != "*"):
+        if(element.sp_pwdp not in ('*')):
             ultimoCambio = element.sp_lstchg
             if(ultimoCambio < numDias):
                 lboxP.insert(END,element.sp_nam)
@@ -102,11 +103,34 @@ def massa_tempssh():
     global quefaig
     quefaig.set("llistant els usuaris que fan massa temps no canvien la contrasenya en shell")
     mida=simpledialog.askinteger('Num dies','Quants dies vols?')
+    lboxS.delete(0,END)
     entry = spwd.getspall()
     #calculo de fechas
-    a = date.today() - timedelta(days=mida)
-    b = date(1970,1,1)
+    a = datetime.date.today() - timedelta(days=mida)
+    b = datetime.date(1970,1,1)
     numDias = (a-b).days
+
+    '''try:
+        with open('/etc/shadow') as f:
+            for line in f:
+                passwd = line.split(':')[1]
+                if(passwd not in ('*')):
+                    date = int(line.split(':')[2]) #serparar por dos puntos
+                    if(date < numDias):
+                        lboxS.insert(END, line.split(':')[0])
+
+    except Exception as e:
+        print("Error: {}".format(e))'''
+    out = subprocess.Popen('cat /etc/shadow | cut -d":" -f1,2,3',shell=True,stdout=subprocess.PIPE)
+    std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
+    for elem in std_out.splitlines():
+        elemento = str(elem).split("'")
+        passwd = elemento[1].split(':')[1]
+        fecha = int(elemento[1].split(':')[2])
+        if(passwd not in ('*')) and (fecha < numDias):
+            nombre = elemento[1].split(':')[0]
+            lboxS.insert(END,nombre)
+
 
 def setuid_actiu():
     global lboxP, lboxS
@@ -137,7 +161,13 @@ def setuid_actiupy():
 def setuid_actiush():
     global lboxS
     global quefaig
+    lboxS.delete(0,END)
     quefaig.set("llistant els usuaris que tenen el SETUID actiu amb shell")
+    out = subprocess.Popen(('find','./test','-type','f','-perm','/4000'),
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
+    for elem in std_out.splitlines():
+       lboxS.insert(END,elem)
 
 def permis_exec_tar():
     global lboxP, lboxS
