@@ -184,7 +184,9 @@ def permis_exec_tarpy():
     quefaig.set("llistant els fitxers tar que tenen permisos d'execucio amb python")
     lboxP.delete(0,END)
     #crear directorio para descomprimir
-    os.mkdir('./descomprimir')
+    if not os.path.exists('./descomprimir'):
+        os.makedirs('./descomprimir')
+
     directorio = os.listdir('./test')
     #print(directorio)
     for line in directorio:
@@ -193,6 +195,10 @@ def permis_exec_tarpy():
         if(extension == ".tar"):
             myFile = os.path.join('./test',line)
             tar = tarfile.open(myFile, mode='r')
+            tar.extractall('./descomprimir')
+        elif(extension == ".tgz"):
+            myFile = os.path.join('./test',line)
+            tar = tarfile.open(myFile, mode='r:gz')
             tar.extractall('./descomprimir')
         
     descomprimidos = os.listdir('./descomprimir')
@@ -210,7 +216,31 @@ def permis_exec_tarpy():
 def permis_exec_tarsh():
     global lboxs
     global quefaig
+
+     #crear directorio para descomprimir
+    if not os.path.exists('./descomprimir'):
+        os.makedirs('./descomprimir')
+
     quefaig.set("llistant els fitxers tar que tenen permisos d'execucio amb shell")
+    lboxS.delete(0,END)
+   
+    directorio = os.listdir('./test')
+    #print(directorio)
+    for line in directorio:
+        path = "./test/"+line
+        archivo, extension = os.path.splitext(line)
+        #print("El archivo {} tiene extension {}".format(archivo,extension))
+        if(extension == ".tar"):
+            out = subprocess.Popen(['tar','xvf',path,'-C','./descomprimir'])
+        elif(extension == ".tgz"):
+            out = subprocess.Popen(['tar','-xvzf',path,'-C','./descomprimir'])
+        
+    
+    out = subprocess.Popen('find ./descomprimir -type f -perm /o=x',shell=True,stdout=subprocess.PIPE)
+    std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
+    for elem in std_out.splitlines():
+        lboxS.insert(END,elem)
+    rmtree("./descomprimir")
 
 def netejar():
     global lboxP, lboxS
