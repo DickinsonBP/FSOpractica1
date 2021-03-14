@@ -158,7 +158,8 @@ def exec_othersSh():
     quefaig.set("Arxius amb permisos d'execució de others (Shell)")
     lboxS.delete(0,END)
     out=subprocess.check_output(["find","./test","-type","f","-perm", "/o=x"], universal_newlines=True)
-    lboxS.insert(END, out)
+    for f in out.split():
+        lboxS.insert(END, f)
 
 
 
