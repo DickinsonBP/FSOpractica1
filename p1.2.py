@@ -230,12 +230,9 @@ def permis_exec_tarsh():
         path = "./test/"+line
         archivo, extension = os.path.splitext(line)
         #print("El archivo {} tiene extension {}".format(archivo,extension))
-        if(extension == ".tar"):
+        if(extension == ".tar") or (extension == ".tgz"):
             out = subprocess.Popen(['tar','xvf',path,'-C','./descomprimir'])
-        elif(extension == ".tgz"):
-            out = subprocess.Popen(['tar','-xvzf',path,'-C','./descomprimir'])
         
-    
     out = subprocess.Popen('find ./descomprimir -type f -perm /o=x',shell=True,stdout=subprocess.PIPE)
     std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
     for elem in std_out.splitlines():

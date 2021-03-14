@@ -78,25 +78,19 @@ cat archivosSUID
 echo '--------------------------------'
 echo '6. Bit X activado de archivos comprimidos'
 
-mkdir descomprimir
-echo "Archivos .tgz" > permisosComprimidos
+mkdir descomprimir 
 sudo find ./test -name "*.tgz" > archivosTgz 2>> error
-while IFS= read -r line
-do
-	tar -xvzf $line -C ./descomprimir > salidas
-	sudo find ./descomprimir -type f -perm /o=x >> permisosComprimidos 2>> error
+sudo find ./test -name "*.tar" >> archivosTgz 2>> error
 
-done < archivosTgz
-echo "Archivos .tar" >> permisosComprimidos
-sudo find ./test -name "*.tar" > archivosTgz 2>> error
 while IFS= read -r line
 do
 	tar xvf $line -C ./descomprimir > salidas
-	sudo find ./descomprimir -type f -perm /o=x >> permisosComprimidos 2>> error
-	cat permisosComprimidos
+	
 done < archivosTgz
+sudo find ./descomprimir -type f -perm /o=x > permisosComprimidos 2>> error
+cat permisosComprimidos
 
 #borrado de ficheros
-rm fileA fileB fileC archivosTgz permisosComprimidos fileAb archivosSUID archivosEjecucionOthers salidas grupos
+rm fileA fileB fileC error archivosTgz fileAb salidas archivosSUID permisosComprimidos archivosEjecucionOthers grupos
 rm -rf descomprimir
 
