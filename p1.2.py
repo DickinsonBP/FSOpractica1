@@ -91,7 +91,7 @@ def massa_tempspy():
     lboxP.delete(0,END)
     for element in entry:
         #if(element.sp_pwdp != "*"):
-        if(element.sp_pwdp not in ('*')):
+        if(element.sp_pwdp not in ('*','!')):
             ultimoCambio = element.sp_lstchg
             if(ultimoCambio < numDias):
                 lboxP.insert(END,element.sp_nam)
@@ -127,7 +127,7 @@ def massa_tempssh():
         elemento = str(elem).split("'")
         passwd = elemento[1].split(':')[1]
         fecha = int(elemento[1].split(':')[2])
-        if(passwd not in ('*')) and (fecha < numDias):
+        if(passwd not in ('*','!')) and (fecha < numDias):
             nombre = elemento[1].split(':')[0]
             lboxS.insert(END,nombre)
 
