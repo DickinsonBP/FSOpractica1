@@ -77,7 +77,7 @@ def noms_curtsPy():
     lboxP.delete(0,END)
     noms=spwd.getspall()
     for nom in noms:
-        if nom.sp_pwdp not in ("*"):
+        if nom.sp_pwdp not in ("*", "!"):
             if(len(nom.sp_nam) < mida):
                 lboxP.insert(END, nom.sp_nam)
     
@@ -89,7 +89,7 @@ def noms_curtsSh():
     lboxS.delete(0,END)
     out=subprocess.check_output(["cut", "-d:", "-f1,2","/etc/shadow"], universal_newlines=True)
     for usu in out.split():
-        if(usu.split(':')[1] != "*" ):
+        if(usu.split(':')[1] not in ("*","!") ):
             if(len(usu.split(':')[0]) < mida):
                 lboxS.insert(END, usu.split(':')[0])
 
@@ -106,9 +106,6 @@ def sudoersPy():
     global quefaig
     quefaig.set("Buscant els sudoers (Python) ")
     lboxP.delete(0,END)
-    usuaris=grp.getgrgid(0)
-    for user in usuaris.gr_mem:
-        lboxP.insert(END, user)
     usuaris=grp.getgrgid(27)
     for user in usuaris.gr_mem:
         lboxP.insert(END, user)
@@ -124,7 +121,7 @@ def sudoersSh():
         sudoer=0
         out=subprocess.check_output(["groups",usu.sp_nam], universal_newlines=True)
         for group in out.split():
-            if(group in ("sudo","root")):
+            if(group in ("sudo")):
                 sudoer=1
         if (sudoer == 1):
             lboxS.insert(END, usu.sp_nam)
