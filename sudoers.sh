@@ -15,7 +15,6 @@ do
 	string=($line)
 	if [[ "${string[*]}" == *"sudo"* ]];then
 		echo "${string[0]}"
-
 	fi
 done < fileB
 
