@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Practica 1 de FSO-2020/21
-# Autors: M.Àngels Moncusí
+# Autors: M.Àngels Moncusí, Anna Gracia, Dickinson Bedoya
 # Data: 26 feb 2021
 # Versio: v1
 
