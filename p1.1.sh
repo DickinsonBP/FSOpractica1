@@ -11,6 +11,8 @@ else
 	dias=300
 fi
 
+directorio=./test
+
 #sudo cat /etc/passwd | cut -d':' -f1,3 | tr ':' ' ' > fileA
 
 #nombre demasiado corto
@@ -34,14 +36,14 @@ sudo ./massatemps.sh $dias
 echo '--------------------------------'
 echo '4. Archivos con permisos de ejecucion others'
 
-sudo ./execothers.sh
+sudo ./execothers.sh $directorio
 
 echo '--------------------------------'
 echo '5. Archivos con permisos SUID activado'
 
-sudo ./setuidactiu.sh
+sudo ./setuidactiu.sh $directorio
 
 echo '--------------------------------'
 echo '6. Bit X activado de archivos comprimidos'
 
-sudo ./comprimidos.sh
+sudo ./comprimidos.sh $directorio
