@@ -106,10 +106,12 @@ def massa_tempssh():
     lboxS.delete(0,END)
     out = subprocess.Popen(["./massatemps.sh '%s'" %mida], shell=True, stdout=subprocess.PIPE)
     std_out, std_error = out.communicate()
-    print(std_out)
+    '''print(std_out)
     nombres = str(std_out).split("'")
     nombres = nombres[1].split("\\n")
     for elem in nombres:
+        lboxS.insert(END,elem)'''
+    for elem in std_out.splitlines():
         lboxS.insert(END,elem)
 
 
