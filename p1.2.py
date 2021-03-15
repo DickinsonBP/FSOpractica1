@@ -68,6 +68,7 @@ def noms_curts():
     quefaig.set("Buscant els noms d'usuaris amb menys d'un cert numero de caràcters ")
     noms_curtsPy()
     noms_curtsSh()
+    quefaig.set("Buscant els noms d'usuaris amb menys d'un cert numero de caràcters ")
 
 def noms_curtsPy():
     global lboxP
@@ -75,11 +76,11 @@ def noms_curtsPy():
     mida=simpledialog.askinteger('Mida mínima', 'Quina mida mínima de caracters dels noms vols?')
     quefaig.set("Buscant els noms d'usuaris amb menys de "+str(mida)+" caracters (Python) ")
     lboxP.delete(0,END)
-    noms=spwd.getspall()
-    for nom in noms:
-        if nom.sp_pwdp not in ("*", "!"):
-            if(len(nom.sp_nam) < mida):
-                lboxP.insert(END, nom.sp_nam)
+    usuaris=pwd.getpwall()
+    for usu in usuaris:
+        if usu.pw_gid >= 1000:
+            if(len(usu.pw_name) < mida):
+                lboxP.insert(END, usu.pw_name)
     
 def noms_curtsSh():
     global lboxS
@@ -87,11 +88,10 @@ def noms_curtsSh():
     mida=simpledialog.askinteger('Mida mínima', 'Quina mida mínima de caracters dels noms vols?')
     quefaig.set("Buscant els noms d'usuaris amb menys de "+str(mida)+" caracters (Python) ")
     lboxS.delete(0,END)
-    out=subprocess.check_output(["cut", "-d:", "-f1,2","/etc/shadow"], universal_newlines=True)
-    for usu in out.split():
-        if(usu.split(':')[1] not in ("*","!") ):
-            if(len(usu.split(':')[0]) < mida):
-                lboxS.insert(END, usu.split(':')[0])
+    out=subprocess.Popen("./nombrescortos.sh " +str(mida)+ "", shell=True, stdout=subprocess.PIPE)
+    std_out, std_err =out.communicate()
+    for i in std_out.splitlines():
+        lboxS.insert(END, i)
 
 def sudoers():
     global lboxP, lboxS
@@ -117,14 +117,12 @@ def sudoersSh():
     quefaig.set("Buscant els sudoers (Shell) ")
     lboxS.delete(0,END)
     usuaris=spwd.getspall()
-    for usu in usuaris:
-        sudoer=0
-        out=subprocess.check_output(["groups",usu.sp_nam], universal_newlines=True)
-        for group in out.split():
-            if(group in ("sudo")):
-                sudoer=1
-        if (sudoer == 1):
-            lboxS.insert(END, usu.sp_nam)
+    out=subprocess.Popen("./sudoers.sh", shell=True, stdout=subprocess.PIPE)
+    std_out, std_err =out.communicate()
+    for f in std_out.splitlines():
+        lboxS.insert(END, f)
+    
+    
 
 def exec_others():
     global lboxP
@@ -154,8 +152,9 @@ def exec_othersSh():
     global quefaig
     quefaig.set("Arxius amb permisos d'execució de others (Shell)")
     lboxS.delete(0,END)
-    out=subprocess.check_output(["find","./test","-type","f","-perm", "/o=x"], universal_newlines=True)
-    for f in out.split():
+    out=subprocess.Popen("./execothers.sh", shell=True, stdout=subprocess.PIPE)
+    std_out, std_err =out.communicate()
+    for f in std_out.splitlines():
         lboxS.insert(END, f)
 
 
