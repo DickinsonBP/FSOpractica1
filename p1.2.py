@@ -23,14 +23,13 @@ from tkinter import messagebox	# per a mostrar missatges a l’usuari
 # imports auxilliars/secundaris
 import gzip                 # per si el tar esta comprimit 
 import spwd                 # para /etc/shadow
+import pwd
 from datetime import datetime # para las fechas
 import datetime 
 from datetime import timedelta
 import stat                 # para permisos
 import tarfile              # para archivos .tar
 from shutil import rmtree   # para borrar carpeta
-import pwd                  # para /etc/passwd
-import grp
 
 def tracta_exepcio(error):
     exception_type = type(error).__name__
@@ -69,6 +68,7 @@ def noms_curts():
     quefaig.set("Buscant els noms d'usuaris amb menys d'un cert numero de caràcters ")
     noms_curtsPy()
     noms_curtsSh()
+    quefaig.set("Buscant els noms d'usuaris amb menys d'un cert numero de caràcters ")
 
 def noms_curtsPy():
     global lboxP
@@ -76,11 +76,11 @@ def noms_curtsPy():
     mida=simpledialog.askinteger('Mida mínima', 'Quina mida mínima de caracters dels noms vols?')
     quefaig.set("Buscant els noms d'usuaris amb menys de "+str(mida)+" caracters (Python) ")
     lboxP.delete(0,END)
-    noms=spwd.getspall()
-    for nom in noms:
-        if nom.sp_pwdp not in ("*", "!"):
-            if(len(nom.sp_nam) < mida):
-                lboxP.insert(END, nom.sp_nam)
+    usuaris=pwd.getpwall()
+    for usu in usuaris:
+        if usu.pw_gid >= 1000:
+            if(len(usu.pw_name) < mida):
+                lboxP.insert(END, usu.pw_name)
     
 def noms_curtsSh():
     global lboxS
@@ -88,11 +88,10 @@ def noms_curtsSh():
     mida=simpledialog.askinteger('Mida mínima', 'Quina mida mínima de caracters dels noms vols?')
     quefaig.set("Buscant els noms d'usuaris amb menys de "+str(mida)+" caracters (Python) ")
     lboxS.delete(0,END)
-    out=subprocess.check_output(["cut", "-d:", "-f1,2","/etc/shadow"], universal_newlines=True)
-    for usu in out.split():
-        if(usu.split(':')[1] not in ("*","!") ):
-            if(len(usu.split(':')[0]) < mida):
-                lboxS.insert(END, usu.split(':')[0])
+    out=subprocess.Popen("./nombrescortos.sh " +str(mida)+ "", shell=True, stdout=subprocess.PIPE)
+    std_out, std_err =out.communicate()
+    for i in std_out.splitlines():
+        lboxS.insert(END, i)
 
 def sudoers():
     global lboxP, lboxS
@@ -118,14 +117,12 @@ def sudoersSh():
     quefaig.set("Buscant els sudoers (Shell) ")
     lboxS.delete(0,END)
     usuaris=spwd.getspall()
-    for usu in usuaris:
-        sudoer=0
-        out=subprocess.check_output(["groups",usu.sp_nam], universal_newlines=True)
-        for group in out.split():
-            if(group in ("sudo")):
-                sudoer=1
-        if (sudoer == 1):
-            lboxS.insert(END, usu.sp_nam)
+    out=subprocess.Popen("./sudoers.sh", shell=True, stdout=subprocess.PIPE)
+    std_out, std_err =out.communicate()
+    for f in std_out.splitlines():
+        lboxS.insert(END, f)
+    
+    
 
 def exec_others():
     global lboxP
@@ -155,9 +152,12 @@ def exec_othersSh():
     global quefaig
     quefaig.set("Arxius amb permisos d'execució de others (Shell)")
     lboxS.delete(0,END)
-    out=subprocess.check_output(["find","./test","-type","f","-perm", "/o=x"], universal_newlines=True)
-    for f in out.split():
+    out=subprocess.Popen("./execothers.sh", shell=True, stdout=subprocess.PIPE)
+    std_out, std_err =out.communicate()
+    for f in std_out.splitlines():
         lboxS.insert(END, f)
+
+
 
 def massa_temps():
     global lboxP, lboxS
@@ -194,32 +194,11 @@ def massa_tempssh():
     quefaig.set("llistant els usuaris que fan massa temps no canvien la contrasenya en shell")
     mida=simpledialog.askinteger('Num dies','Quants dies vols?')
     lboxS.delete(0,END)
-    entry = spwd.getspall()
-    #calculo de fechas
-    a = datetime.date.today() - timedelta(days=mida)
-    b = datetime.date(1970,1,1)
-    numDias = (a-b).days
-
-    '''try:
-        with open('/etc/shadow') as f:
-            for line in f:
-                passwd = line.split(':')[1]
-                if(passwd not in ('*')):
-                    date = int(line.split(':')[2]) #serparar por dos puntos
-                    if(date < numDias):
-                        lboxS.insert(END, line.split(':')[0])
-
-    except Exception as e:
-        print("Error: {}".format(e))'''
-    out = subprocess.Popen('cat /etc/shadow | cut -d":" -f1,2,3',shell=True,stdout=subprocess.PIPE)
-    std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
+    out = subprocess.Popen(["./massatemps.sh '%s'" %mida], shell=True, stdout=subprocess.PIPE)
+    std_out, std_error = out.communicate()
     for elem in std_out.splitlines():
-        elemento = str(elem).split("'")
-        passwd = elemento[1].split(':')[1]
-        fecha = int(elemento[1].split(':')[2])
-        if(passwd not in ('*','!')) and (fecha < numDias):
-            nombre = elemento[1].split(':')[0]
-            lboxS.insert(END,nombre)
+        lboxS.insert(END,elem)
+
 
 def setuid_actiu():
     global lboxP, lboxS
@@ -252,8 +231,7 @@ def setuid_actiush():
     global quefaig
     lboxS.delete(0,END)
     quefaig.set("llistant els usuaris que tenen el SETUID actiu amb shell")
-    out = subprocess.Popen(('find','./test','-type','f','-perm','/4000'),
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out = subprocess.Popen(["./setuidactiu.sh"], shell=True, stdout=subprocess.PIPE)
     std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
     for elem in std_out.splitlines():
        lboxS.insert(END,elem)
@@ -305,27 +283,11 @@ def permis_exec_tarpy():
 def permis_exec_tarsh():
     global lboxs
     global quefaig
-     #crear directorio para descomprimir
-    if not os.path.exists('./descomprimir'):
-        os.makedirs('./descomprimir')
-
-    quefaig.set("llistant els fitxers tar que tenen permisos d'execucio amb shell")
     lboxS.delete(0,END)
-   
-    directorio = os.listdir('./test')
-    #print(directorio)
-    for line in directorio:
-        path = "./test/"+line
-        archivo, extension = os.path.splitext(line)
-        #print("El archivo {} tiene extension {}".format(archivo,extension))
-        if(extension == ".tar") or (extension == ".tgz"):
-            out = subprocess.Popen(['tar','xvf',path,'-C','./descomprimir'])
-        
-    out = subprocess.Popen('find ./descomprimir -type f -perm /o=x',shell=True,stdout=subprocess.PIPE)
-    std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
+    out = subprocess.Popen(["./comprimidos.sh"], shell=True, stdout=subprocess.PIPE)
+    std_out, std_error = out.communicate()
     for elem in std_out.splitlines():
         lboxS.insert(END,elem)
-    rmtree("./descomprimir")
 
 def netejar():
     global lboxP, lboxS
@@ -359,9 +321,9 @@ quefaig.set("No se que fer encara, escull una opció")
 frameBotons= Frame(guiroot)
 Button (frameBotons, text='llista_dir', command=llista_dir).pack(anchor=W,side=LEFT)
 Button (frameBotons, text='noms curts', command=noms_curts).pack(anchor=W,side=LEFT)
-Button (frameBotons, text='sudoers', command=sudoers).pack(side=LEFT)
+Button (frameBotons, text='sudoers', command=llista_dir).pack(side=LEFT)
 Button (frameBotons, text='massa temps', command=massa_temps).pack(side=LEFT)
-Button (frameBotons, text='exec others', command=exec_others).pack(side=LEFT)
+Button (frameBotons, text='exec others', command=llista_dir).pack(side=LEFT)
 Button (frameBotons, text='setuid actiu', command=setuid_actiu).pack(side=LEFT)
 Button (frameBotons, text='permis exec a tar', command=permis_exec_tar).pack(anchor=E,side=LEFT)
 Button (frameBotons, text='netejar', command=netejar).pack(anchor=W,side=LEFT)
@@ -389,10 +351,10 @@ lboxP.pack(side=LEFT,expand=True,fill=BOTH)
 
 Label  (frameBotonsPy, text='Només Python:',font=("Arial Bold",14)).pack(anchor=W,side=TOP,pady=20)
 Button (frameBotonsPy, text='llista dir', command=llista_dirPy).pack(anchor=W,side=TOP)
+Button (frameBotonsPy, text='noms curts', command=llista_dirPy).pack(anchor=W,side=TOP)
+Button (frameBotonsPy, text='sudoers', command=llista_dirPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='massa temps', command=massa_tempspy).pack(anchor=W,side=TOP)
-Button (frameBotonsPy, text='noms curts', command=noms_curtsPy).pack(anchor=W,side=TOP)
-Button (frameBotonsPy, text='sudoers', command=sudoersPy).pack(anchor=W,side=TOP)
-Button (frameBotonsPy, text='exec others', command=exec_othersPy).pack(anchor=W,side=TOP)
+Button (frameBotonsPy, text='exec others', command=llista_dirPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='setuid actiu', command=setuid_actiupy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='exec a tar', command=permis_exec_tarpy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='netejar', command=netejar).pack(anchor=W,side=TOP)
@@ -412,10 +374,10 @@ frameEventsSh.pack(expand=True,fill=BOTH)
 
 Label  (frameBotonsSh, text='Només Shell :',font=("Arial Bold",14)).pack(anchor=W,side=TOP,pady=20)
 Button (frameBotonsSh, text='llista dir', command=llista_dirSh).pack(anchor=W,side=TOP)
+Button (frameBotonsSh, text='noms curts', command=llista_dirSh).pack(anchor=W,side=TOP)
+Button (frameBotonsSh, text='sudoers', command=llista_dirSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='massa temps', command=massa_tempssh).pack(anchor=W,side=TOP)
-Button (frameBotonsSh, text='noms curts', command=noms_curtsSh).pack(anchor=W,side=TOP)
-Button (frameBotonsSh, text='sudoers', command=sudoersSh).pack(anchor=W,side=TOP)
-Button (frameBotonsSh, text='exec others', command=exec_othersSh).pack(anchor=W,side=TOP)
+Button (frameBotonsSh, text='exec others', command=llista_dirSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='setuid actiu', command=setuid_actiush).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='exec a tar', command=permis_exec_tarsh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='netejar', command=netejar).pack(anchor=W,side=TOP)
