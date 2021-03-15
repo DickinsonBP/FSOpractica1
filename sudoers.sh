@@ -15,10 +15,8 @@ do
 	string=($line)
 	if [[ "${string[*]}" == *"sudo"* ]];then
 		echo "${string[0]}"
-		let cont=cont+1
 	fi
 done < fileB
-echo "Hay $cont usuarios con permisos elevados"
 
 
 rm fileAb fileB grupos

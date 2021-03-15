@@ -1,5 +1,5 @@
 #!/bin/bash
-let largo=$1
+largo=$1
 
 sudo cat /etc/passwd | cut -d':' -f1,3 | tr ':' ' ' > fileA
 
