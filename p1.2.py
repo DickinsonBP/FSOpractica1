@@ -79,7 +79,7 @@ def noms_curtsPy():
     lboxP.delete(0,END)
     usuaris=pwd.getpwall()
     for usu in usuaris:
-        if usu.pw_gid >= 1000:
+        if usu.pw_uid >= 1000:
             if(len(usu.pw_name) < mida):
                 lboxP.insert(END, usu.pw_name)
     
