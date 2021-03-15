@@ -152,8 +152,9 @@ def exec_othersSh():
     global lboxP
     global quefaig
     quefaig.set("Arxius amb permisos d'execució de others (Shell)")
+    directori= "./test"
     lboxS.delete(0,END)
-    out=subprocess.Popen("./execothers.sh", shell=True, stdout=subprocess.PIPE)
+    out=subprocess.Popen("./execothers.sh '%s'" %directori, shell=True, stdout=subprocess.PIPE)
     std_out, std_err =out.communicate()
     for f in std_out.splitlines():
         lboxS.insert(END, f)
@@ -232,7 +233,8 @@ def setuid_actiush():
     global quefaig
     lboxS.delete(0,END)
     quefaig.set("llistant els usuaris que tenen el SETUID actiu amb shell")
-    out = subprocess.Popen(["./setuidactiu.sh"], shell=True, stdout=subprocess.PIPE)
+    directorio="./test"
+    out = subprocess.Popen(["./setuidactiu.sh '%s'" %directorio], shell=True, stdout=subprocess.PIPE)
     std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
     for elem in std_out.splitlines():
        lboxS.insert(END,elem)
@@ -285,7 +287,8 @@ def permis_exec_tarsh():
     global lboxs
     global quefaig
     lboxS.delete(0,END)
-    out = subprocess.Popen(["./comprimidos.sh"], shell=True, stdout=subprocess.PIPE)
+    directorio="./test"
+    out = subprocess.Popen(["./comprimidos.sh '%s'" %directorio], shell=True, stdout=subprocess.PIPE)
     std_out, std_error = out.communicate()
     for elem in std_out.splitlines():
         lboxS.insert(END,elem)

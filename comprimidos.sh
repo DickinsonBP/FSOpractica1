@@ -1,8 +1,10 @@
 #!/bin/bash
 
+directorio=$1
+
 mkdir descomprimir 
-sudo find ./test -name "*.tgz" > archivosTgz 2>> error
-sudo find ./test -name "*.tar" >> archivosTgz 2>> error
+sudo find $directorio -name "*.tgz" > archivosTgz 2>> error
+sudo find $directorio -name "*.tar" >> archivosTgz 2>> error
 
 while IFS= read -r line
 do
