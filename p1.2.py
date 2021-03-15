@@ -104,32 +104,13 @@ def massa_tempssh():
     quefaig.set("llistant els usuaris que fan massa temps no canvien la contrasenya en shell")
     mida=simpledialog.askinteger('Num dies','Quants dies vols?')
     lboxS.delete(0,END)
-    entry = spwd.getspall()
-    #calculo de fechas
-    a = datetime.date.today() - timedelta(days=mida)
-    b = datetime.date(1970,1,1)
-    numDias = (a-b).days
-
-    '''try:
-        with open('/etc/shadow') as f:
-            for line in f:
-                passwd = line.split(':')[1]
-                if(passwd not in ('*')):
-                    date = int(line.split(':')[2]) #serparar por dos puntos
-                    if(date < numDias):
-                        lboxS.insert(END, line.split(':')[0])
-
-    except Exception as e:
-        print("Error: {}".format(e))'''
-    out = subprocess.Popen('cat /etc/shadow | cut -d":" -f1,2,3',shell=True,stdout=subprocess.PIPE)
-    std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
-    for elem in std_out.splitlines():
-        elemento = str(elem).split("'")
-        passwd = elemento[1].split(':')[1]
-        fecha = int(elemento[1].split(':')[2])
-        if(passwd not in ('*','!')) and (fecha < numDias):
-            nombre = elemento[1].split(':')[0]
-            lboxS.insert(END,nombre)
+    out = subprocess.Popen(["./massatemps.sh '%s'" %mida], shell=True, stdout=subprocess.PIPE)
+    std_out, std_error = out.communicate()
+    print(std_out)
+    nombres = str(std_out).split("'")
+    nombres = nombres[1].split("\\n")
+    for elem in nombres:
+        lboxS.insert(END,elem)
 
 
 def setuid_actiu():
@@ -163,8 +144,7 @@ def setuid_actiush():
     global quefaig
     lboxS.delete(0,END)
     quefaig.set("llistant els usuaris que tenen el SETUID actiu amb shell")
-    out = subprocess.Popen(('find','./test','-type','f','-perm','/4000'),
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out = subprocess.Popen(["./setuidactiu.sh"], shell=True, stdout=subprocess.PIPE)
     std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
     for elem in std_out.splitlines():
        lboxS.insert(END,elem)
@@ -216,28 +196,11 @@ def permis_exec_tarpy():
 def permis_exec_tarsh():
     global lboxs
     global quefaig
-
-     #crear directorio para descomprimir
-    if not os.path.exists('./descomprimir'):
-        os.makedirs('./descomprimir')
-
-    quefaig.set("llistant els fitxers tar que tenen permisos d'execucio amb shell")
     lboxS.delete(0,END)
-   
-    directorio = os.listdir('./test')
-    #print(directorio)
-    for line in directorio:
-        path = "./test/"+line
-        archivo, extension = os.path.splitext(line)
-        #print("El archivo {} tiene extension {}".format(archivo,extension))
-        if(extension == ".tar") or (extension == ".tgz"):
-            out = subprocess.Popen(['tar','xvf',path,'-C','./descomprimir'])
-        
-    out = subprocess.Popen('find ./descomprimir -type f -perm /o=x',shell=True,stdout=subprocess.PIPE)
-    std_out, std_error = out.communicate() #salida y error, el Popen no deja splitlines
+    out = subprocess.Popen(["./comprimidos.sh"], shell=True, stdout=subprocess.PIPE)
+    std_out, std_error = out.communicate()
     for elem in std_out.splitlines():
         lboxS.insert(END,elem)
-    rmtree("./descomprimir")
 
 def netejar():
     global lboxP, lboxS
