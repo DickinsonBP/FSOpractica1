@@ -23,6 +23,7 @@ from tkinter import messagebox	# per a mostrar missatges a l’usuari
 # imports auxilliars/secundaris
 import gzip                 # per si el tar esta comprimit 
 import spwd                 # para /etc/shadow
+import pwd
 from datetime import datetime # para las fechas
 import datetime 
 from datetime import timedelta
