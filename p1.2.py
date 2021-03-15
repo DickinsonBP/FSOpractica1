@@ -24,6 +24,7 @@ from tkinter import messagebox	# per a mostrar missatges a l’usuari
 import gzip                 # per si el tar esta comprimit 
 import spwd                 # para /etc/shadow
 import pwd
+import grp
 from datetime import datetime # para las fechas
 import datetime 
 from datetime import timedelta
@@ -321,9 +322,9 @@ quefaig.set("No se que fer encara, escull una opció")
 frameBotons= Frame(guiroot)
 Button (frameBotons, text='llista_dir', command=llista_dir).pack(anchor=W,side=LEFT)
 Button (frameBotons, text='noms curts', command=noms_curts).pack(anchor=W,side=LEFT)
-Button (frameBotons, text='sudoers', command=llista_dir).pack(side=LEFT)
+Button (frameBotons, text='sudoers', command=sudoers).pack(side=LEFT)
 Button (frameBotons, text='massa temps', command=massa_temps).pack(side=LEFT)
-Button (frameBotons, text='exec others', command=llista_dir).pack(side=LEFT)
+Button (frameBotons, text='exec others', command=exec_others).pack(side=LEFT)
 Button (frameBotons, text='setuid actiu', command=setuid_actiu).pack(side=LEFT)
 Button (frameBotons, text='permis exec a tar', command=permis_exec_tar).pack(anchor=E,side=LEFT)
 Button (frameBotons, text='netejar', command=netejar).pack(anchor=W,side=LEFT)
@@ -351,10 +352,10 @@ lboxP.pack(side=LEFT,expand=True,fill=BOTH)
 
 Label  (frameBotonsPy, text='Només Python:',font=("Arial Bold",14)).pack(anchor=W,side=TOP,pady=20)
 Button (frameBotonsPy, text='llista dir', command=llista_dirPy).pack(anchor=W,side=TOP)
-Button (frameBotonsPy, text='noms curts', command=llista_dirPy).pack(anchor=W,side=TOP)
-Button (frameBotonsPy, text='sudoers', command=llista_dirPy).pack(anchor=W,side=TOP)
+Button (frameBotonsPy, text='noms curts', command=noms_curtsPy).pack(anchor=W,side=TOP)
+Button (frameBotonsPy, text='sudoers', command=sudoersPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='massa temps', command=massa_tempspy).pack(anchor=W,side=TOP)
-Button (frameBotonsPy, text='exec others', command=llista_dirPy).pack(anchor=W,side=TOP)
+Button (frameBotonsPy, text='exec others', command=exec_othersPy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='setuid actiu', command=setuid_actiupy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='exec a tar', command=permis_exec_tarpy).pack(anchor=W,side=TOP)
 Button (frameBotonsPy, text='netejar', command=netejar).pack(anchor=W,side=TOP)
@@ -374,10 +375,10 @@ frameEventsSh.pack(expand=True,fill=BOTH)
 
 Label  (frameBotonsSh, text='Només Shell :',font=("Arial Bold",14)).pack(anchor=W,side=TOP,pady=20)
 Button (frameBotonsSh, text='llista dir', command=llista_dirSh).pack(anchor=W,side=TOP)
-Button (frameBotonsSh, text='noms curts', command=llista_dirSh).pack(anchor=W,side=TOP)
-Button (frameBotonsSh, text='sudoers', command=llista_dirSh).pack(anchor=W,side=TOP)
+Button (frameBotonsSh, text='noms curts', command=noms_curtsSh).pack(anchor=W,side=TOP)
+Button (frameBotonsSh, text='sudoers', command=sudoersSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='massa temps', command=massa_tempssh).pack(anchor=W,side=TOP)
-Button (frameBotonsSh, text='exec others', command=llista_dirSh).pack(anchor=W,side=TOP)
+Button (frameBotonsSh, text='exec others', command=exec_othersSh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='setuid actiu', command=setuid_actiush).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='exec a tar', command=permis_exec_tarsh).pack(anchor=W,side=TOP)
 Button (frameBotonsSh, text='netejar', command=netejar).pack(anchor=W,side=TOP)
